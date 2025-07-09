@@ -36,16 +36,21 @@ final class IsoDepAndroid {
   /// Returns null if the tag is not compatible.
   static IsoDepAndroid? from(NfcTag tag) {
     // ignore: invalid_use_of_protected_member
-    final data = tag.data as TagPigeon?;
-    final tech = data?.isoDep;
+    final rawData = tag.data;
+    final data = rawData is Map<Object?, Object?> 
+        ? Map<String, dynamic>.from(rawData) 
+        : rawData as Map<String, dynamic>?;
+    final tech = data?['isodep'] is Map<Object?, Object?>
+        ? Map<String, dynamic>.from(data!['isodep'] as Map<Object?, Object?>)
+        : data?['isodep'] as Map<String, dynamic>?;
     final atag = NfcTagAndroid.from(tag);
     if (data == null || tech == null || atag == null) return null;
     return IsoDepAndroid._(
-      data.handle,
+      data['handle'] as String,
       tag: atag,
-      hiLayerResponse: tech.hiLayerResponse,
-      historicalBytes: tech.historicalBytes,
-      isExtendedLengthApduSupported: tech.isExtendedLengthApduSupported,
+      hiLayerResponse: tech['hiLayerResponse'] as Uint8List?,
+      historicalBytes: tech['historicalBytes'] as Uint8List?,
+      isExtendedLengthApduSupported: tech['isExtendedLengthApduSupported'] as bool,
     );
   }
 
