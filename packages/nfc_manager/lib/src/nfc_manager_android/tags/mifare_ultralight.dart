@@ -28,14 +28,19 @@ final class MifareUltralightAndroid {
   /// Returns null if the tag is not compatible.
   static MifareUltralightAndroid? from(NfcTag tag) {
     // ignore: invalid_use_of_protected_member
-    final data = tag.data as TagPigeon?;
-    final tech = data?.mifareUltralight;
+    final rawData = tag.data;
+    final data = rawData is Map<Object?, Object?> 
+        ? Map<String, dynamic>.from(rawData) 
+        : rawData as Map<String, dynamic>?;
+    final tech = data?['mifareultralight'] is Map<Object?, Object?>
+        ? Map<String, dynamic>.from(data!['mifareultralight'] as Map<Object?, Object?>)
+        : data?['mifareultralight'] as Map<String, dynamic>?;
     final atag = NfcTagAndroid.from(tag);
     if (data == null || tech == null || atag == null) return null;
     return MifareUltralightAndroid._(
-      data.handle,
+      data['handle'] as String,
       tag: atag,
-      type: MifareUltralightTypeAndroid.values.byName(tech.type.name),
+      type: MifareUltralightTypeAndroid.values[tech['type'] as int],
     );
   }
 

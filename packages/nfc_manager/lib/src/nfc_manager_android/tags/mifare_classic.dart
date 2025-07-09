@@ -40,17 +40,22 @@ final class MifareClassicAndroid {
   /// Returns null if the tag is not compatible.
   static MifareClassicAndroid? from(NfcTag tag) {
     // ignore: invalid_use_of_protected_member
-    final data = tag.data as TagPigeon?;
-    final tech = data?.mifareClassic;
+    final rawData = tag.data;
+    final data = rawData is Map<Object?, Object?> 
+        ? Map<String, dynamic>.from(rawData) 
+        : rawData as Map<String, dynamic>?;
+    final tech = data?['mifareclassic'] is Map<Object?, Object?>
+        ? Map<String, dynamic>.from(data!['mifareclassic'] as Map<Object?, Object?>)
+        : data?['mifareclassic'] as Map<String, dynamic>?;
     final atag = NfcTagAndroid.from(tag);
     if (data == null || tech == null || atag == null) return null;
     return MifareClassicAndroid._(
-      data.handle,
+      data['handle'] as String,
       tag: atag,
-      type: MifareClassicTypeAndroid.values.byName(tech.type.name),
-      blockCount: tech.blockCount,
-      sectorCount: tech.sectorCount,
-      size: tech.size,
+      type: MifareClassicTypeAndroid.values[tech['type'] as int],
+      blockCount: tech['blockCount'] as int,
+      sectorCount: tech['sectorCount'] as int,
+      size: tech['size'] as int,
     );
   }
 
