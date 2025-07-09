@@ -10,7 +10,7 @@ import 'package:pigeon/pigeon.dart';
 
 @FlutterApi()
 abstract final class FlutterApiPigeon {
-  void onTagDiscovered(TagPigeon tag);
+  void onTagDiscovered(Map<String, Object> tag);
   void onAdapterStateChanged(AdapterStatePigeon state);
 }
 
@@ -63,128 +63,6 @@ abstract final class HostApiPigeon {
   Uint8List mifareUltralightTransceive({required String handle, required Uint8List bytes});
   void ndefFormatableFormat({required String handle, required NdefMessagePigeon firstMessage});
   void ndefFormatableFormatReadOnly({required String handle, required NdefMessagePigeon firstMessage});
-}
-
-final class TagPigeon {
-  const TagPigeon({
-    required this.handle,
-    required this.id,
-    required this.techList,
-    required this.ndef,
-    required this.nfcA,
-    required this.nfcB,
-    required this.nfcF,
-    required this.nfcV,
-    required this.isoDep,
-    required this.mifareClassic,
-    required this.mifareUltralight,
-    required this.ndefFormatable,
-    required this.nfcBarcode,
-  });
-  final String handle;
-  final Uint8List id;
-  final List<String> techList;
-  final NdefPigeon? ndef;
-  final NfcAPigeon? nfcA;
-  final NfcBPigeon? nfcB;
-  final NfcFPigeon? nfcF;
-  final NfcVPigeon? nfcV;
-  final IsoDepPigeon? isoDep;
-  final MifareClassicPigeon? mifareClassic;
-  final MifareUltralightPigeon? mifareUltralight;
-  final String? ndefFormatable;
-  final NfcBarcodePigeon? nfcBarcode;
-}
-
-final class NdefPigeon {
-  const NdefPigeon({
-    required this.type,
-    required this.canMakeReadOnly,
-    required this.isWritable,
-    required this.maxSize,
-    required this.cachedNdefMessage,
-  });
-  final String type;
-  final bool canMakeReadOnly;
-  final bool isWritable;
-  final int maxSize;
-  final NdefMessagePigeon? cachedNdefMessage;
-}
-
-final class NfcAPigeon {
-  const NfcAPigeon({
-    required this.atqa,
-    required this.sak,
-  });
-  final Uint8List atqa;
-  final int sak;
-}
-
-final class NfcBPigeon {
-  const NfcBPigeon({
-    required this.applicationData,
-    required this.protocolInfo,
-  });
-  final Uint8List applicationData;
-  final Uint8List protocolInfo;
-}
-
-final class NfcFPigeon {
-  const NfcFPigeon({
-    required this.manufacturer,
-    required this.systemCode,
-  });
-  final Uint8List manufacturer;
-  final Uint8List systemCode;
-}
-
-final class NfcVPigeon {
-  const NfcVPigeon({
-    required this.dsfId,
-    required this.responseFlags,
-  });
-  final int dsfId;
-  final int responseFlags;
-}
-
-final class IsoDepPigeon {
-  IsoDepPigeon({
-    required this.hiLayerResponse,
-    required this.historicalBytes,
-    required this.isExtendedLengthApduSupported,
-  });
-  final Uint8List? hiLayerResponse;
-  final Uint8List? historicalBytes;
-  final bool isExtendedLengthApduSupported;
-}
-
-final class MifareClassicPigeon {
-  const MifareClassicPigeon({
-    required this.type,
-    required this.blockCount,
-    required this.sectorCount,
-    required this.size,
-  });
-  final MifareClassicTypePigeon type;
-  final int blockCount;
-  final int sectorCount;
-  final int size;
-}
-
-final class MifareUltralightPigeon {
-  const MifareUltralightPigeon({
-    required this.type,
-  });
-  final MifareUltralightTypePigeon type;
-}
-
-final class NfcBarcodePigeon {
-  const NfcBarcodePigeon({
-    required this.type,
-    required this.barcode,
-  });
-  final NfcBarcodeTypePigeon type;
-  final Uint8List barcode;
 }
 
 final class NdefMessagePigeon {
