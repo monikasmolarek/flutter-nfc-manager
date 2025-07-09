@@ -308,9 +308,9 @@ class NfcManagerPlugin: FlutterPlugin, ActivityAware, HostApiPigeon, BroadcastRe
 
   private fun onTagDiscovered(tag: Tag) {
     val handle = UUID.randomUUID().toString()
-    val pigeonTag = toTagPigeon(tag, handle)
+    val tagMap = toTagMap(tag, handle)
     cachedTags[handle] = tag
-    activity.runOnUiThread { flutterApi.onTagDiscovered(pigeonTag) { /* no op */ } }
+    activity.runOnUiThread { flutterApi.onTagDiscovered(tagMap) { /* no op */ } }
   }
 
   private fun getAdapter(): NfcAdapter {
@@ -379,89 +379,128 @@ private fun toNdefRecordPigeon(value: NdefRecord): NdefRecordPigeon {
   )
 }
 
-private fun toTagPigeon(value: Tag, handle: String): TagPigeon {
-  return TagPigeon(
-    handle = handle,
-    id = value.id,
-    techList = value.techList.toMutableList(),
-    ndef = Ndef.get(value)?.let { toNdefPigeon(it) },
-    nfcA = NfcA.get(value)?.let { toNfcAPigeon(it) },
-    nfcB = NfcB.get(value)?.let { toNfcBPigeon(it) },
-    nfcF = NfcF.get(value)?.let { toNfcFPigeon(it) },
-    nfcV = NfcV.get(value)?.let { toNfcVPigeon(it) },
-    isoDep = IsoDep.get(value)?.let { toIsoDepPigeon(it) },
-    mifareClassic = MifareClassic.get(value)?.let { toMifareClassicPigeon(it) },
-    mifareUltralight = MifareUltralight.get(value)?.let { toMifareUltralightPigeon(it) },
-    ndefFormatable = NdefFormatable.get(value)?.let { "" },
-    nfcBarcode = NfcBarcode.get(value)?.let { toNfcBarcodePigeon(it) },
+private fun toTagMap(value: Tag, handle: String): Map<String, Any> {
+  val techList = value.techList.map { it.split('.').last() }
+  val tagMap = mutableMapOf<String, Any>(
+    "handle" to handle,
+    "id" to value.id,
+    "techList" to techList,
+  )
+
+  if (techList.contains("Ndef")) {
+    tagMap["ndef"] = Ndef.get(value)?.let { toNdefMap(it) }!!
+  }
+  if (techList.contains("NfcA")) {
+    tagMap["nfca"] = NfcA.get(value)?.let { toNfcAMap(it) }!!
+  }
+  if (techList.contains("NfcB")) {
+    tagMap["nfcb"] = NfcB.get(value)?.let { toNfcBMap(it) }!!
+  }
+  if (techList.contains("NfcF")) {
+    tagMap["nfcf"] = NfcF.get(value)?.let { toNfcFMap(it) }!!
+  }
+  if (techList.contains("NfcV")) {
+    tagMap["nfcv"] = NfcV.get(value)?.let { toNfcVMap(it) }!!
+  }
+  if (techList.contains("IsoDep")) {
+    tagMap["isodep"] = IsoDep.get(value)?.let { toIsoDepMap(it) }!!
+  }
+  if (techList.contains("MifareClassic")) {
+    tagMap["mifareclassic"] = MifareClassic.get(value)?.let { toMifareClassicMap(it) }!!
+  }
+  if (techList.contains("MifareUltralight")) {
+    tagMap["mifareultralight"] = MifareUltralight.get(value)?.let { toMifareUltralightMap(it) }!!
+  }
+  if (techList.contains("NdefFormatable")) {
+    tagMap["ndefFormatable"] = NdefFormatable.get(value)?.let { "" }!!
+  }
+  if (techList.contains("NfcBarcode")) {
+    tagMap["nfcbarcode"] = NfcBarcode.get(value)?.let { toNfcBarcodeMap(it) }!!
+  }
+
+  return tagMap
+}
+
+private fun toNdefMap(value: Ndef): Map<String, Any?> {
+  return mapOf(
+    "type" to value.type,
+    "isWritable" to value.isWritable,
+    "maxSize" to value.maxSize.toLong(),
+    "canMakeReadOnly" to value.canMakeReadOnly(),
+    "cachedNdefMessage" to value.cachedNdefMessage?.let { toNdefMessageMap(it) },
   )
 }
 
-private fun toNdefPigeon(value: Ndef): NdefPigeon {
-  return NdefPigeon(
-    type = value.type,
-    isWritable = value.isWritable,
-    maxSize = value.maxSize.toLong(),
-    canMakeReadOnly = value.canMakeReadOnly(),
-    cachedNdefMessage = value.cachedNdefMessage?.let { toNdefMessagePigeon(it) },
+private fun toNdefMessageMap(value: NdefMessage): Map<String, Any?> {
+  return mapOf(
+    "records" to value.records.map { toNdefRecordMap(it) }
   )
 }
 
-private fun toNfcAPigeon(value: NfcA): NfcAPigeon {
-  return NfcAPigeon(
-    atqa = value.atqa,
-    sak = value.sak.toLong(),
+private fun toNdefRecordMap(value: NdefRecord): Map<String, Any?> {
+  return mapOf(
+    "tnf" to toTypeNameFormatPigeon(value.tnf).raw,
+    "type" to value.type,
+    "id" to value.id,
+    "payload" to value.payload,
   )
 }
 
-private fun toNfcBPigeon(value: NfcB): NfcBPigeon {
-  return NfcBPigeon(
-    applicationData = value.applicationData,
-    protocolInfo = value.protocolInfo,
+private fun toNfcAMap(value: NfcA): Map<String, Any?> {
+  return mapOf(
+    "atqa" to value.atqa,
+    "sak" to value.sak.toLong(),
   )
 }
 
-private fun toNfcFPigeon(value: NfcF): NfcFPigeon {
-  return NfcFPigeon(
-    manufacturer = value.manufacturer,
-    systemCode = value.systemCode,
+private fun toNfcBMap(value: NfcB): Map<String, Any?> {
+  return mapOf(
+    "applicationData" to value.applicationData,
+    "protocolInfo" to value.protocolInfo,
   )
 }
 
-private fun toNfcVPigeon(value: NfcV): NfcVPigeon {
-  return NfcVPigeon(
-    dsfId = value.dsfId.toLong(),
-    responseFlags = value.responseFlags.toLong(),
+private fun toNfcFMap(value: NfcF): Map<String, Any?> {
+  return mapOf(
+    "manufacturer" to value.manufacturer,
+    "systemCode" to value.systemCode,
   )
 }
 
-private fun toIsoDepPigeon(value: IsoDep): IsoDepPigeon {
-  return IsoDepPigeon(
-    hiLayerResponse = value.hiLayerResponse,
-    historicalBytes = value.historicalBytes,
-    isExtendedLengthApduSupported = value.isExtendedLengthApduSupported,
+private fun toNfcVMap(value: NfcV): Map<String, Any?> {
+  return mapOf(
+    "dsfId" to value.dsfId.toLong(),
+    "responseFlags" to value.responseFlags.toLong(),
   )
 }
 
-private fun toMifareClassicPigeon(value: MifareClassic): MifareClassicPigeon {
-  return MifareClassicPigeon(
-    type = toMifareClassicTypePigeon(value.type),
-    blockCount = value.blockCount.toLong(),
-    sectorCount = value.sectorCount.toLong(),
-    size = value.size.toLong(),
+private fun toIsoDepMap(value: IsoDep): Map<String, Any?> {
+  return mapOf(
+    "hiLayerResponse" to value.hiLayerResponse,
+    "historicalBytes" to value.historicalBytes,
+    "isExtendedLengthApduSupported" to value.isExtendedLengthApduSupported,
   )
 }
 
-private fun toMifareUltralightPigeon(value: MifareUltralight): MifareUltralightPigeon {
-  return MifareUltralightPigeon(
-    type = toMifareUltralightTypePigeon(value.type)
+private fun toMifareClassicMap(value: MifareClassic): Map<String, Any?> {
+  return mapOf(
+    "type" to toMifareClassicTypePigeon(value.type).raw,
+    "blockCount" to value.blockCount.toLong(),
+    "sectorCount" to value.sectorCount.toLong(),
+    "size" to value.size.toLong(),
   )
 }
 
-private fun toNfcBarcodePigeon(value: NfcBarcode): NfcBarcodePigeon {
-  return NfcBarcodePigeon(
-    type = toNfcBarcodeTypePigeon(value.type),
-    barcode = value.barcode,
+private fun toMifareUltralightMap(value: MifareUltralight): Map<String, Any?> {
+  return mapOf(
+    "type" to toMifareUltralightTypePigeon(value.type).raw
+  )
+}
+
+private fun toNfcBarcodeMap(value: NfcBarcode): Map<String, Any?> {
+  return mapOf(
+    "type" to toNfcBarcodeTypePigeon(value.type).raw,
+    "barcode" to value.barcode,
   )
 }
 
