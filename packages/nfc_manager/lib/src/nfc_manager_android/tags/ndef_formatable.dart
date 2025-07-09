@@ -20,11 +20,14 @@ final class NdefFormatableAndroid {
   /// Returns null if the tag is not compatible.
   static NdefFormatableAndroid? from(NfcTag tag) {
     // ignore: invalid_use_of_protected_member
-    final data = tag.data as TagPigeon?;
-    final tech = data?.ndefFormatable;
+    final rawData = tag.data;
+    final data = rawData is Map<Object?, Object?> 
+        ? Map<String, dynamic>.from(rawData) 
+        : rawData as Map<String, dynamic>?;
+    final tech = data?['ndefFormatable'] as String?;
     final atag = NfcTagAndroid.from(tag);
     if (data == null || tech == null || atag == null) return null;
-    return NdefFormatableAndroid._(data.handle, tag: atag);
+    return NdefFormatableAndroid._(data['handle'] as String, tag: atag);
   }
 
   // TODO: DOC
