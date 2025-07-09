@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:ndef_record/ndef_record.dart';
 import 'package:nfc_manager/src/nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/src/nfc_manager_android/pigeon.dart';
@@ -43,31 +45,34 @@ final class NdefAndroid {
   /// Returns null if the tag is not compatible.
   static NdefAndroid? from(NfcTag tag) {
     // ignore: invalid_use_of_protected_member
-    final data = tag.data as TagPigeon?;
-    final tech = data?.ndef;
+    final rawData = tag.data;
+    final data = rawData is Map<Object?, Object?> 
+        ? Map<String, dynamic>.from(rawData) 
+        : rawData as Map<String, dynamic>?;
+    final tech = data?['ndef'] is Map<Object?, Object?>
+        ? Map<String, dynamic>.from(data!['ndef'] as Map<Object?, Object?>)
+        : data?['ndef'] as Map<String, dynamic>?;
     final atag = NfcTagAndroid.from(tag);
     if (data == null || tech == null || atag == null) return null;
     return NdefAndroid._(
-      data.handle,
+      data['handle'] as String,
       tag: atag,
-      type: tech.type,
-      maxSize: tech.maxSize,
-      canMakeReadOnly: tech.canMakeReadOnly,
-      isWritable: tech.isWritable,
+      type: tech['type'] as String,
+      maxSize: tech['maxSize'] as int,
+      canMakeReadOnly: tech['canMakeReadOnly'] as bool,
+      isWritable: tech['isWritable'] as bool,
       cachedNdefMessage:
-          tech.cachedNdefMessage == null
+          tech['cachedNdefMessage'] == null
               ? null
               : NdefMessage(
                 records:
-                    tech.cachedNdefMessage!.records
+                    (tech['cachedNdefMessage']!['records'] as List)
                         .map(
                           (r) => NdefRecord(
-                            typeNameFormat: TypeNameFormat.values.byName(
-                              r.tnf.name,
-                            ),
-                            type: r.type,
-                            identifier: r.id,
-                            payload: r.payload,
+                            typeNameFormat: TypeNameFormat.values[(r as Map)['tnf'] as int],
+                            type: (r as Map)['type'] as Uint8List,
+                            identifier: (r as Map)['id'] as Uint8List,
+                            payload: (r as Map)['payload'] as Uint8List,
                           ),
                         )
                         .toList(),

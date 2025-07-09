@@ -32,15 +32,20 @@ final class NfcBAndroid {
   /// Returns null if the tag is not compatible.
   static NfcBAndroid? from(NfcTag tag) {
     // ignore: invalid_use_of_protected_member
-    final data = tag.data as TagPigeon?;
-    final tech = data?.nfcB;
+    final rawData = tag.data;
+    final data = rawData is Map<Object?, Object?> 
+        ? Map<String, dynamic>.from(rawData) 
+        : rawData as Map<String, dynamic>?;
+    final tech = data?['nfcb'] is Map<Object?, Object?>
+        ? Map<String, dynamic>.from(data!['nfcb'] as Map<Object?, Object?>)
+        : data?['nfcb'] as Map<String, dynamic>?;
     final atag = NfcTagAndroid.from(tag);
     if (data == null || tech == null || atag == null) return null;
     return NfcBAndroid._(
-      data.handle,
+      data['handle'] as String,
       tag: atag,
-      applicationData: tech.applicationData,
-      protocolInfo: tech.protocolInfo,
+      applicationData: tech['applicationData'] as Uint8List,
+      protocolInfo: tech['protocolInfo'] as Uint8List,
     );
   }
 

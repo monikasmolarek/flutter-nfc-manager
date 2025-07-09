@@ -68,7 +68,7 @@ class _NfcFlutterApiAndroid implements FlutterApiPigeon {
   }
 
   @override
-  void onTagDiscovered(TagPigeon tag) {
+  void onTagDiscovered(Map<String, dynamic> tag) {
     _instance._onTagDiscovered?.call(
       // ignore: invalid_use_of_visible_for_testing_member
       NfcTag(data: tag),
