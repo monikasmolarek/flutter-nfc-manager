@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:nfc_manager/src/nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/src/nfc_manager_android/pigeon.dart';
-import 'package:nfc_manager/src/nfc_manager_android/pigeon.g.dart';
 import 'package:nfc_manager/src/nfc_manager_android/tags/tag.dart';
 
 /// The class providing access to ISO-DEP (ISO 14443-4) operations for Android.
